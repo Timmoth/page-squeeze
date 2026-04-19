@@ -3,8 +3,12 @@
   "name": "page-squeeze",
   "version": "1.0",
   "description": "Squeezes webpages into clean markdown.",
-  "permissions": ["activeTab", "scripting", "downloads", "clipboardWrite"],
-  "host_permissions": ["<all_urls>"],
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "downloads",
+    "clipboardWrite"
+  ],
   "icons": {
     "128": "icon.png"
   },
