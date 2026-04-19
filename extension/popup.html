@@ -1,0 +1,141 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>page-squeeze</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "SF Mono", "Cascadia Code", "Fira Code", "JetBrains Mono", Consolas, monospace;
+        font-size: 12px;
+        margin: 10px;
+        width: 260px;
+        background: #0a0a0a;
+        color: #888;
+      }
+
+      .header {
+        padding: 4px 0 10px;
+        border-bottom: 1px solid #1a1a1a;
+        margin-bottom: 10px;
+      }
+
+      .header span {
+        color: #555;
+      }
+
+      .options {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        margin-bottom: 10px;
+      }
+
+      .option {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        padding: 3px 4px;
+        transition: color 0.1s;
+      }
+
+      .option:hover {
+        color: #aaa;
+      }
+
+      .option input[type="checkbox"] {
+        appearance: none;
+        -webkit-appearance: none;
+        width: 12px;
+        height: 12px;
+        border: 1px solid #2a2a2a;
+        flex-shrink: 0;
+        position: relative;
+        background: transparent;
+        font-size: 11px;
+        line-height: 1;
+        color: transparent;
+        transition: color 0.1s, border-color 0.1s;
+      }
+
+      .option input[type="checkbox"]:checked {
+        border-color: #333;
+        color: #888;
+      }
+
+      .option input[type="checkbox"]:checked::after {
+        content: "x";
+        position: absolute;
+        left: 1.5px;
+        top: -1.5px;
+        font-size: 12px;
+        font-weight: bold;
+        line-height: 1;
+      }
+
+      button {
+        width: 100%;
+        padding: 6px 10px;
+        border: 1px solid #1a1a1a;
+        border-radius: 0;
+        background: transparent;
+        color: #555;
+        cursor: pointer;
+        font-family: inherit;
+        font-size: 11px;
+        letter-spacing: 0.5px;
+        transition: color 0.1s, border-color 0.1s;
+        text-transform: uppercase;
+      }
+
+      button:hover {
+        color: #aaa;
+        border-color: #333;
+      }
+
+      #status {
+        margin-top: 8px;
+        font-size: 11px;
+        white-space: pre-wrap;
+        color: #333;
+        line-height: 1.5;
+        min-height: 16px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <span>page-squeeze</span>
+    </div>
+    <div class="options">
+      <label class="option">
+        <input type="checkbox" id="opt-title" checked />
+        title
+      </label>
+      <label class="option">
+        <input type="checkbox" id="opt-meta" checked />
+        meta
+      </label>
+      <label class="option">
+        <input type="checkbox" id="opt-content" checked />
+        content
+      </label>
+      <label class="option">
+        <input type="checkbox" id="opt-links" checked />
+        links
+      </label>
+    </div>
+    <div style="display: flex; gap: 6px;">
+      <button id="download">download</button>
+      <button id="copy">copy</button>
+    </div>
+    <div id="status"></div>
+    <script src="popup.js"></script>
+  </body>
+</html>

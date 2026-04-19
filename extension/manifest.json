@@ -1,0 +1,14 @@
+{
+  "manifest_version": 3,
+  "name": "page-squeeze",
+  "version": "1.0",
+  "description": "Squeezes webpages into clean markdown.",
+  "permissions": ["activeTab", "scripting", "downloads", "clipboardWrite"],
+  "host_permissions": ["<all_urls>"],
+  "icons": {
+    "128": "icon.png"
+  },
+  "action": {
+    "default_popup": "popup.html"
+  }
+}
