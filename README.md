@@ -4,6 +4,12 @@ A Chrome extension that squeezes webpages into clean markdown and downloads it a
 
 ## Installation
 
+**Install from Chrome Web Store (Recommended)**
+
+You can now install page-squeeze directly from the [Chrome Web Store](https://chromewebstore.google.com/detail/page-squeeze/abjniaameijmdllhhpbfbppfnklhjj) for free.
+
+**Manual Installation**
+
 1. Open Chrome and navigate to `chrome://extensions/`
 2. Enable **Developer mode** (top-right toggle)
 3. Click **Load unpacked**
