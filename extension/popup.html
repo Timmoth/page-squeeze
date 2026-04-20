@@ -19,14 +19,51 @@
         color: #888;
       }
 
+      body.light {
+        background: #f5f5f5;
+        color: #444;
+      }
+
       .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
         padding: 4px 0 10px;
         border-bottom: 1px solid #1a1a1a;
         margin-bottom: 10px;
       }
 
+      body.light .header {
+        border-bottom-color: #ddd;
+      }
+
       .header span {
+        color: #bbb;
+        font-weight: bold;
+      }
+
+      body.light .header span {
+        color: #222;
+      }
+
+      .header .toggle {
+        cursor: pointer;
+        color: #666;
+        font-size: 14px;
+        user-select: none;
+        padding: 0 2px;
+      }
+
+      body.light .header .toggle {
         color: #555;
+      }
+
+      .header .toggle:hover {
+        color: #aaa;
+      }
+
+      body.light .header .toggle:hover {
+        color: #333;
       }
 
       .options {
@@ -46,7 +83,11 @@
       }
 
       .option:hover {
-        color: #aaa;
+        color: #ccc;
+      }
+
+      body.light .option:hover {
+        color: #333;
       }
 
       .option input[type="checkbox"] {
@@ -64,13 +105,22 @@
         transition: color 0.1s, border-color 0.1s;
       }
 
+      body.light .option input[type="checkbox"] {
+        border-color: #aaa;
+      }
+
       .option input[type="checkbox"]:checked {
         border-color: #333;
-        color: #888;
+        color: #bbb;
+      }
+
+      body.light .option input[type="checkbox"]:checked {
+        border-color: #666;
+        color: #222;
       }
 
       .option input[type="checkbox"]:checked::after {
-        content: "x";
+        content: "✓";
         position: absolute;
         left: 1.5px;
         top: -1.5px;
@@ -85,7 +135,7 @@
         border: 1px solid #1a1a1a;
         border-radius: 0;
         background: transparent;
-        color: #555;
+        color: #bbb;
         cursor: pointer;
         font-family: inherit;
         font-size: 11px;
@@ -94,9 +144,19 @@
         text-transform: uppercase;
       }
 
+      body.light button {
+        border-color: #ccc;
+        color: #222;
+      }
+
       button:hover {
-        color: #aaa;
+        color: #ddd;
         border-color: #333;
+      }
+
+      body.light button:hover {
+        color: #000;
+        border-color: #999;
       }
 
       #status {
@@ -107,11 +167,16 @@
         line-height: 1.5;
         min-height: 16px;
       }
+
+      body.light #status {
+        color: #777;
+      }
     </style>
   </head>
   <body>
     <div class="header">
       <span>page-squeeze</span>
+      <span class="toggle" id="theme">◐</span>
     </div>
     <div class="options">
       <label class="option">

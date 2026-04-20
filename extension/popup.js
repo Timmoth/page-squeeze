@@ -1,3 +1,23 @@
+const body = document.body;
+
+const savedTheme = localStorage.getItem("theme");
+const systemPrefersLight = window.matchMedia("(prefers-color-scheme: light)").matches;
+
+if (savedTheme === "light" || (!savedTheme && systemPrefersLight)) {
+  body.classList.add("light");
+}
+
+window.matchMedia("(prefers-color-scheme: light)").addEventListener("change", (e) => {
+  if (localStorage.getItem("theme") !== "dark" && localStorage.getItem("theme") !== "light") {
+    body.classList.toggle("light", e.matches);
+  }
+});
+
+document.getElementById("theme").addEventListener("click", () => {
+  body.classList.toggle("light");
+  localStorage.setItem("theme", body.classList.contains("light") ? "light" : "dark");
+});
+
 const statusEl = document.getElementById("status");
 
 async function extract() {

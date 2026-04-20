@@ -33,3 +33,5 @@ A Chrome extension that squeezes webpages into clean markdown and downloads it a
 # LINKS
 - [Link text](https://...)
 ```
+
+![Page Squeeze](assets/screenshot_01.png)
