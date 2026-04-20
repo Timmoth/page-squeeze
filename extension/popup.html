@@ -10,14 +10,16 @@
         box-sizing: border-box;
       }
 
-      body {
-        font-family: "SF Mono", "Cascadia Code", "Fira Code", "JetBrains Mono", Consolas, monospace;
-        font-size: 12px;
-        margin: 10px;
-        width: 260px;
-        background: #0a0a0a;
-        color: #888;
-      }
+   body {
+         font-family: "SF Mono", "Cascadia Code", "Fira Code", "JetBrains Mono", Consolas, monospace;
+         font-size: 12px;
+         margin: 0;
+         padding: 0;
+         width: 260px;
+         height: auto;
+         background: #0a0a0a;
+         color: #888;
+       }
 
       body.light {
         background: #f5f5f5;
@@ -25,52 +27,84 @@
       }
 
       .header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 4px 0 10px;
-        border-bottom: 1px solid #1a1a1a;
-        margin-bottom: 10px;
-      }
+         display: flex;
+         justify-content: space-between;
+         align-items: center;
+         padding: 0 0 8px;
+         border-bottom: 1px solid #1a1a1a;
+         margin-bottom: 6px;
+       }
 
-      body.light .header {
-        border-bottom-color: #ddd;
-      }
+       body.light .header {
+         border-bottom-color: #ddd;
+       }
 
-      .header span {
-        color: #bbb;
-        font-weight: bold;
-      }
+       .tabs {
+         display: flex;
+         gap: 2px;
+       }
 
-      body.light .header span {
-        color: #222;
-      }
+       .tab {
+         cursor: pointer;
+         color: #666;
+         font-size: 11px;
+         user-select: none;
+         padding: 2px 8px;
+         border: 1px solid transparent;
+         transition: color 0.1s, border-color 0.1s;
+       }
 
-      .header .toggle {
-        cursor: pointer;
-        color: #666;
-        font-size: 14px;
-        user-select: none;
-        padding: 0 2px;
-      }
+       .tab:hover {
+         color: #aaa;
+       }
 
-      body.light .header .toggle {
-        color: #555;
-      }
+       .tab.active {
+         color: #bbb;
+         border-color: #333;
+       }
 
-      .header .toggle:hover {
-        color: #aaa;
-      }
+       body.light .tab {
+         color: #888;
+       }
 
-      body.light .header .toggle:hover {
-        color: #333;
-      }
+       body.light .tab:hover {
+         color: #555;
+       }
 
-      .options {
+       body.light .tab.active {
+         color: #222;
+         border-color: #666;
+       }
+
+       .header .toggle {
+         cursor: pointer;
+         color: #666;
+         font-size: 14px;
+         user-select: none;
+         padding: 0 2px;
+       }
+
+       body.light .header .toggle {
+         color: #555;
+       }
+
+       .header .toggle:hover {
+         color: #aaa;
+       }
+
+       body.light .header .toggle:hover {
+         color: #333;
+       }
+
+       body.light .header {
+          border-bottom-color: #ddd;
+        }
+
+       .options {
         display: flex;
         flex-direction: column;
         gap: 2px;
-        margin-bottom: 10px;
+        margin-bottom: 6px;
       }
 
       .option {
@@ -160,47 +194,276 @@
       }
 
       #status {
-        margin-top: 8px;
+        margin-top: 4px;
         font-size: 11px;
         white-space: pre-wrap;
         color: #333;
         line-height: 1.5;
-        min-height: 16px;
       }
 
       body.light #status {
         color: #777;
       }
+
+      .image-option {
+        border-top: 1px solid #1a1a1a;
+        padding-top: 4px;
+        margin-top: 2px;
+      }
+
+      body.light .image-option {
+        border-top-color: #ddd;
+      }
+
+    #gallery-container {
+         max-height: 400px;
+         overflow-y: auto;
+         padding-top: 6px;
+       }
+
+      body.light #gallery-container {
+        border-top-color: #ddd;
+      }
+
+      #gallery-container.visible {
+        display: block;
+      }
+
+      .gallery-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 4px;
+        padding: 4px 0;
+      }
+
+      .gallery-thumb {
+        width: 100%;
+        aspect-ratio: 1;
+        object-fit: cover;
+        background: #1a1a1a;
+        cursor: pointer;
+        border: 1px solid #2a2a2a;
+        transition: border-color 0.1s;
+      }
+
+      .gallery-thumb:hover {
+        border-color: #555;
+      }
+
+      body.light .gallery-thumb {
+        background: #e0e0e0;
+        border-color: #ccc;
+      }
+
+      body.light .gallery-thumb:hover {
+        border-color: #999;
+      }
+
+      .gallery-count {
+        color: #666;
+        font-size: 10px;
+        margin-bottom: 4px;
+      }
+
+      body.light .gallery-count {
+        color: #777;
+      }
+
+      .gallery-loading {
+        color: #555;
+        font-size: 10px;
+        padding: 20px 0;
+        text-align: center;
+      }
+
+    .preview-overlay {
+         display: none;
+         position: absolute;
+         top: 0;
+         left: 0;
+         right: 0;
+         bottom: 0;
+         background: rgba(0, 0, 0, 0.95);
+         z-index: 9999;
+         flex-direction: column;
+         align-items: center;
+         padding: 12px;
+         gap: 8px;
+       }
+
+       .preview-overlay.visible {
+         display: flex;
+       }
+
+       .preview-overlay img {
+         width: auto;
+         max-width: 100%;
+         max-height: calc(100% - 100px);
+         object-fit: contain;
+       }
+
+       .preview-controls {
+         background: #0a0a0a;
+         border: 1px solid #1a1a1a;
+         padding: 8px 12px;
+         text-align: center;
+         max-width: 240px;
+         width: 100%;
+       }
+
+       .preview-info {
+         color: #888;
+         font-size: 10px;
+         margin-bottom: 6px;
+         word-break: break-all;
+       }
+
+       .preview-actions {
+         display: flex;
+         gap: 4px;
+         align-items: center;
+         justify-content: center;
+       }
+
+       .preview-actions select {
+         background: #1a1a1a;
+         color: #bbb;
+         border: 1px solid #333;
+         font-family: inherit;
+         font-size: 10px;
+         padding: 3px 6px;
+         cursor: pointer;
+       }
+
+       .preview-actions select option {
+         background: #1a1a1a;
+         color: #bbb;
+       }
+
+       .preview-close {
+         position: absolute;
+         top: 6px;
+         right: 8px;
+         color: #888;
+         font-size: 18px;
+         cursor: pointer;
+         user-select: none;
+         line-height: 1;
+         padding: 4px;
+       }
+
+       .preview-close:hover {
+         color: #ddd;
+       }
+
+       .gallery-download-btn {
+         background: #1a1a1a;
+         border: 1px solid #333;
+         color: #bbb;
+         cursor: pointer;
+         font-family: inherit;
+         font-size: 10px;
+         padding: 3px 6px;
+       }
+
+       .gallery-download-btn:hover {
+         border-color: #555;
+         color: #ddd;
+       }
+
+       body.light .gallery-download-btn {
+         background: #f5f5f5;
+         border-color: #ccc;
+         color: #222;
+       }
+
+       body.light .gallery-download-btn:hover {
+         border-color: #999;
+         color: #000;
+       }
+
+       body.light .preview-actions select {
+         background: #f5f5f5;
+         color: #222;
+         border-color: #ccc;
+       }
+
+       body.light .preview-actions select option {
+         background: #f5f5f5;
+         color: #222;
+       }
+
+       .section {
+         display: none;
+       }
+
+       .section.active {
+         display: block;
+       }
+
+       .wrap {
+         position: relative;
+         padding: 10px;
+       }
     </style>
   </head>
   <body>
-    <div class="header">
-      <span>page-squeeze</span>
-      <span class="toggle" id="theme">◐</span>
-    </div>
-    <div class="options">
-      <label class="option">
-        <input type="checkbox" id="opt-title" checked />
-        title
-      </label>
-      <label class="option">
-        <input type="checkbox" id="opt-meta" checked />
-        meta
-      </label>
-      <label class="option">
-        <input type="checkbox" id="opt-content" checked />
-        content
-      </label>
-      <label class="option">
-        <input type="checkbox" id="opt-links" checked />
-        links
-      </label>
-    </div>
-    <div style="display: flex; gap: 6px;">
-      <button id="download">download</button>
-      <button id="copy">copy</button>
-    </div>
-    <div id="status"></div>
+     <div class="wrap">
+       <div class="header">
+         <div class="tabs">
+           <span class="tab active" data-tab="markdown">markdown</span>
+           <span class="tab" data-tab="images">images</span>
+         </div>
+         <span class="toggle" id="theme">◐</span>
+       </div>
+       <div class="section active" id="markdown-section">
+         <div class="options">
+           <label class="option">
+             <input type="checkbox" id="opt-title" checked />
+             title
+           </label>
+           <label class="option">
+             <input type="checkbox" id="opt-meta" checked />
+             meta
+           </label>
+           <label class="option">
+             <input type="checkbox" id="opt-content" checked />
+             content
+           </label>
+           <label class="option">
+              <input type="checkbox" id="opt-links" checked />
+              links
+            </label>
+         </div>
+         <div style="display: flex; gap: 6px;">
+           <button id="download">download</button>
+           <button id="copy">copy</button>
+         </div>
+         <div id="status"></div>
+       </div>
+       <div class="section" id="image-section">
+         <div id="gallery-container">
+           <div class="gallery-count" id="gallery-count"></div>
+           <div class="gallery-grid" id="gallery-grid"></div>
+         </div>
+       </div>
+
+       <div class="preview-overlay" id="preview-overlay">
+         <span class="preview-close" id="preview-close">&times;</span>
+         <img id="preview-img" src="" alt="preview" />
+         <div class="preview-controls">
+           <div class="preview-info" id="preview-info"></div>
+           <div class="preview-actions">
+             <select id="preview-format">
+               <option value="original">Original</option>
+               <option value="image/jpeg" selected>JPEG</option>
+               <option value="image/png">PNG</option>
+             </select>
+             <button id="preview-download" class="gallery-download-btn">Download</button>
+           </div>
+         </div>
+       </div>
+     </div>
     <script src="popup.js"></script>
   </body>
 </html>
