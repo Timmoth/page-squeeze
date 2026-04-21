@@ -193,7 +193,8 @@
         border-color: #999;
       }
 
-      #status {
+      #status,
+      #ocr-status {
         margin-top: 4px;
         font-size: 11px;
         white-space: pre-wrap;
@@ -201,7 +202,8 @@
         line-height: 1.5;
       }
 
-      body.light #status {
+      body.light #status,
+      body.light #ocr-status {
         color: #777;
       }
 
@@ -402,46 +404,89 @@
        }
 
        .wrap {
-         position: relative;
-         padding: 10px;
-       }
-    </style>
+          position: relative;
+          padding: 10px;
+        }
+
+        .ocr-hint {
+          color: #555;
+          font-size: 10px;
+          text-align: center;
+          padding: 12px 0 4px;
+          line-height: 1.4;
+        }
+
+        body.light .ocr-hint {
+          color: #777;
+        }
+
+        #ocr-preview {
+          display: none;
+          white-space: pre-wrap;
+          font-size: 11px;
+          max-height: 200px;
+          overflow-y: auto;
+          margin-top: 6px;
+          padding: 6px 8px;
+          border: 1px solid #1a1a1a;
+          background: #0a0a0a;
+          color: #bbb;
+          line-height: 1.4;
+          word-break: break-word;
+        }
+
+        #ocr-preview.visible {
+          display: block;
+        }
+
+        body.light #ocr-preview {
+          border-color: #ccc;
+          background: #f5f5f5;
+          color: #444;
+        }
+     </style>
   </head>
   <body>
      <div class="wrap">
        <div class="header">
-         <div class="tabs">
-           <span class="tab active" data-tab="markdown">markdown</span>
-           <span class="tab" data-tab="images">images</span>
-         </div>
+          <div class="tabs">
+            <span class="tab active" data-tab="markdown">markdown</span>
+            <span class="tab" data-tab="ocr">select text</span>
+             <span class="tab" data-tab="images">images</span>
+          </div>
          <span class="toggle" id="theme">◐</span>
        </div>
        <div class="section active" id="markdown-section">
-         <div class="options">
-           <label class="option">
-             <input type="checkbox" id="opt-title" checked />
-             title
-           </label>
-           <label class="option">
-             <input type="checkbox" id="opt-meta" checked />
-             meta
-           </label>
-           <label class="option">
-             <input type="checkbox" id="opt-content" checked />
-             content
-           </label>
-           <label class="option">
-              <input type="checkbox" id="opt-links" checked />
-              links
+          <div class="options">
+            <label class="option">
+              <input type="checkbox" id="opt-title" checked />
+              title
             </label>
-         </div>
-         <div style="display: flex; gap: 6px;">
-           <button id="download">download</button>
-           <button id="copy">copy</button>
-         </div>
-         <div id="status"></div>
-       </div>
-       <div class="section" id="image-section">
+            <label class="option">
+              <input type="checkbox" id="opt-meta" checked />
+              meta
+            </label>
+            <label class="option">
+              <input type="checkbox" id="opt-content" checked />
+              content
+            </label>
+            <label class="option">
+               <input type="checkbox" id="opt-links" checked />
+               links
+             </label>
+          </div>
+          <div style="display: flex; gap: 6px;">
+            <button id="download">download</button>
+            <button id="copy">copy</button>
+          </div>
+          <div id="status"></div>
+        </div>
+        <div class="section" id="ocr-section">
+          <div id="ocr-status"></div>
+          <div id="ocr-preview"></div>
+          <div class="ocr-hint">drag on page to copy visible text in that area</div>
+        </div>
+        <div class="section" id="image-section">
          <div id="gallery-container">
            <div class="gallery-count" id="gallery-count"></div>
            <div class="gallery-grid" id="gallery-grid"></div>
@@ -464,6 +509,6 @@
          </div>
        </div>
      </div>
-    <script src="popup.js"></script>
+     <script src="popup.js"></script>
   </body>
 </html>

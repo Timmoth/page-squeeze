@@ -423,6 +423,8 @@ const galleryGrid = document.getElementById("gallery-grid");
 const galleryCount = document.getElementById("gallery-count");
 const markdownSection = document.getElementById("markdown-section");
 const imageSection = document.getElementById("image-section");
+const ocrSection = document.getElementById("ocr-section");
+const ocrStatusEl = document.getElementById("ocr-status");
 const previewOverlay = document.getElementById("preview-overlay");
 const previewImg = document.getElementById("preview-img");
 const previewInfo = document.getElementById("preview-info");
@@ -433,6 +435,8 @@ const previewClose = document.getElementById("preview-close");
 let currentImageData = null;
 let imagesLoaded = false;
 
+
+
 document.querySelectorAll(".tab").forEach((tab) => {
   tab.addEventListener("click", () => {
     document.querySelectorAll(".tab").forEach((t) => t.classList.remove("active"));
@@ -441,10 +445,27 @@ document.querySelectorAll(".tab").forEach((tab) => {
     if (tabName === "markdown") {
       markdownSection.classList.add("active");
       imageSection.classList.remove("active");
+      ocrSection.classList.remove("active");
       adjustPopupHeight();
+    } else if (tabName === "ocr") {
+      markdownSection.classList.remove("active");
+      imageSection.classList.remove("active");
+      ocrSection.classList.add("active");
+      showOcrStatus("drag on page to copy visible text");
+      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        if (tabs[0]?.id) {
+          injectOcrOverlay(tabs[0].id).catch((err) => {
+            showOcrStatus(`err: ${err.message}`);
+            return;
+          }).then(() => {
+            window.close();
+          });
+        }
+      });
     } else {
       markdownSection.classList.remove("active");
       imageSection.classList.add("active");
+      ocrSection.classList.remove("active");
       loadGallery();
       adjustPopupHeight();
     }
@@ -454,7 +475,7 @@ document.querySelectorAll(".tab").forEach((tab) => {
 function getPopupHeight() {
   body.style.height = "auto";
   void body.offsetHeight;
-  const isActiveTab = markdownSection.classList.contains("active") || imageSection.classList.contains("active");
+  const isActiveTab = markdownSection.classList.contains("active") || imageSection.classList.contains("active") || ocrSection.classList.contains("active");
   const scrollHeight = body.scrollHeight + (isActiveTab ? 0 : 0);
   return Math.min(scrollHeight, 600);
 }
@@ -717,3 +738,332 @@ previewDownload.addEventListener("click", async () => {
     statusEl.textContent = `err: ${err.message}`;
   }
 });
+
+// ─── OCR / Area Selection ───────────────────────────────────────────────
+
+function showOcrStatus(msg) {
+  if (!ocrStatusEl) return;
+  ocrStatusEl.textContent = msg;
+}
+
+function injectOcrOverlay(tabId) {
+  return chrome.scripting.executeScript({
+    target: { tabId, allFrames: false },
+    func: () => {
+      if (window.__ocrOverlayActive) return;
+      window.__ocrOverlayActive = true;
+
+      function normalizeText(text) {
+        return (text || "").replace(/\s+/g, " ").trim();
+      }
+
+      function intersects(a, b) {
+        return a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
+      }
+
+      function isHidden(el) {
+        if (!el) return true;
+        const style = getComputedStyle(el);
+        return style.display === "none" || style.visibility === "hidden" || style.opacity === "0";
+      }
+
+      function isSkippedElement(el) {
+        return ["SCRIPT", "STYLE", "NOSCRIPT", "IFRAME"].includes(el.tagName);
+      }
+
+      function getBlockElement(el) {
+        let current = el;
+        while (current && current !== document.body) {
+          const display = getComputedStyle(current).display;
+          if (
+            /^(P|LI|H1|H2|H3|H4|H5|H6|PRE|CODE|BLOCKQUOTE|TD|TH|ARTICLE|SECTION|MAIN|DIV)$/.test(current.tagName) ||
+            ["block", "list-item", "table-cell", "table-row"].includes(display)
+          ) {
+            return current;
+          }
+          current = current.parentElement;
+        }
+        return el;
+      }
+
+      function collectTextFromSelection(selectionRect) {
+        const seen = new Set();
+        const blocks = [];
+
+        function visit(node) {
+          if (!node) return;
+
+          if (node.nodeType === Node.TEXT_NODE) {
+            const text = normalizeText(node.textContent);
+            const parent = node.parentElement;
+
+            if (!text || !parent || isHidden(parent) || isSkippedElement(parent)) return;
+
+            const range = document.createRange();
+            range.selectNodeContents(node);
+            const rects = Array.from(range.getClientRects());
+
+            if (!rects.some((rect) => rect.width > 0 && rect.height > 0 && intersects(rect, selectionRect))) {
+              return;
+            }
+
+            const block = getBlockElement(parent);
+            if (seen.has(block)) return;
+
+            const blockText = normalizeText(block.innerText || block.textContent);
+            if (!blockText) return;
+
+            seen.add(block);
+            blocks.push(blockText);
+            return;
+          }
+
+          if (node.nodeType !== Node.ELEMENT_NODE) return;
+
+          const el = node;
+          if (isHidden(el) || isSkippedElement(el)) return;
+
+          for (const child of el.childNodes) visit(child);
+          if (el.shadowRoot) {
+            for (const child of el.shadowRoot.childNodes) visit(child);
+          }
+        }
+
+        visit(document.body);
+
+        return blocks.join("\n\n");
+      }
+
+      function showToast(message) {
+        let toast = document.getElementById("__ocr_toast");
+        if (!toast) {
+          toast = document.createElement("div");
+          toast.id = "__ocr_toast";
+          Object.assign(toast.style, {
+            position: "fixed",
+            bottom: "16px",
+            left: "50%",
+            transform: "translateX(-50%)",
+            zIndex: "2147483647",
+            color: "#fff",
+            fontFamily: "system-ui, -apple-system, sans-serif",
+            fontSize: "13px",
+            padding: "8px 14px",
+            background: "rgba(0,0,0,0.78)",
+            borderRadius: "8px",
+            boxShadow: "0 4px 16px rgba(0,0,0,0.25)",
+            pointerEvents: "none"
+          });
+          document.body.appendChild(toast);
+        }
+        toast.textContent = message;
+      }
+
+      let selectionUiRemoved = false;
+
+      function removeSelectionUi() {
+        if (selectionUiRemoved) return;
+        selectionUiRemoved = true;
+        overlay.remove();
+        selRect.remove();
+        hint.remove();
+        cursorBadge.remove();
+        window.removeEventListener("keydown", onKey, true);
+        document.documentElement.style.overflow = prevOverflow;
+        document.documentElement.style.cursor = prevHtmlCursor;
+        document.body.style.cursor = prevBodyCursor;
+      }
+
+      function finish(removeToast = false) {
+        removeSelectionUi();
+        window.__ocrOverlayActive = false;
+
+        if (removeToast) {
+          const toast = document.getElementById("__ocr_toast");
+          if (toast) toast.remove();
+        }
+      }
+
+      const prevOverflow = document.documentElement.style.overflow;
+      const prevHtmlCursor = document.documentElement.style.cursor;
+      const prevBodyCursor = document.body.style.cursor;
+
+      const overlay = document.createElement("div");
+      Object.assign(overlay.style, {
+        position: "fixed",
+        inset: "0",
+        zIndex: "2147483647",
+        cursor: "crosshair",
+        background: "rgba(0,0,0,0.28)",
+        userSelect: "none",
+        WebkitUserSelect: "none"
+      });
+
+      const selRect = document.createElement("div");
+      Object.assign(selRect.style, {
+        position: "fixed",
+        zIndex: "2147483647",
+        border: "2px dashed #4a9eff",
+        background: "rgba(74,158,255,0.10)",
+        pointerEvents: "none",
+        display: "none"
+      });
+
+      const hint = document.createElement("div");
+      Object.assign(hint.style, {
+        position: "fixed",
+        bottom: "16px",
+        left: "50%",
+        transform: "translateX(-50%)",
+        zIndex: "2147483647",
+        color: "#fff",
+        fontFamily: "system-ui, -apple-system, sans-serif",
+        fontSize: "13px",
+        padding: "8px 16px",
+        background: "rgba(0,0,0,0.6)",
+        borderRadius: "6px",
+        pointerEvents: "none",
+        whiteSpace: "nowrap"
+      });
+      hint.textContent = "drag to select · esc to cancel";
+
+      const cursorBadge = document.createElement("div");
+      Object.assign(cursorBadge.style, {
+        position: "fixed",
+        zIndex: "2147483647",
+        color: "#fff",
+        fontFamily: "system-ui, -apple-system, sans-serif",
+        fontSize: "12px",
+        padding: "4px 8px",
+        background: "rgba(0,0,0,0.72)",
+        borderRadius: "999px",
+        pointerEvents: "none",
+        whiteSpace: "nowrap",
+        boxShadow: "0 4px 12px rgba(0,0,0,0.2)"
+      });
+      cursorBadge.textContent = "click and drag";
+
+      document.body.appendChild(overlay);
+      document.body.appendChild(selRect);
+      document.body.appendChild(hint);
+      document.body.appendChild(cursorBadge);
+      document.documentElement.style.overflow = "hidden";
+      document.documentElement.style.cursor = "crosshair";
+      document.body.style.cursor = "crosshair";
+
+      let startX = 0;
+      let startY = 0;
+      let drawing = false;
+      const dpr = window.devicePixelRatio || 1;
+
+      function onKey(e) {
+        if (e.key === "Escape") {
+          finish();
+          showToast("selection cancelled");
+          setTimeout(() => finish(true), 1600);
+        }
+      }
+
+      function updateCursorUi(x, y, message) {
+        cursorBadge.style.left = Math.min(x + 14, window.innerWidth - 120) + "px";
+        cursorBadge.style.top = Math.max(8, y + 14) + "px";
+        cursorBadge.textContent = message;
+      }
+
+      updateCursorUi(window.innerWidth / 2, window.innerHeight / 2, "click and drag");
+
+      window.addEventListener("keydown", onKey, true);
+
+      overlay.addEventListener("mousedown", (e) => {
+        if (e.button !== 0) return;
+        drawing = true;
+        startX = e.clientX;
+        startY = e.clientY;
+        selRect.style.display = "none";
+        hint.style.display = "none";
+        updateCursorUi(e.clientX, e.clientY, "0 x 0");
+      });
+
+      overlay.addEventListener("mousemove", (e) => {
+        if (!drawing) {
+          updateCursorUi(e.clientX, e.clientY, "click and drag");
+          return;
+        }
+
+        const left = Math.min(startX, e.clientX);
+        const top = Math.min(startY, e.clientY);
+        const width = Math.abs(e.clientX - startX);
+        const height = Math.abs(e.clientY - startY);
+
+        selRect.style.left = left + "px";
+        selRect.style.top = top + "px";
+        selRect.style.width = width + "px";
+        selRect.style.height = height + "px";
+        selRect.style.display = "block";
+        updateCursorUi(e.clientX, e.clientY, `${Math.round(width)} x ${Math.round(height)}`);
+      });
+
+      overlay.addEventListener("mouseup", (e) => {
+        if (!drawing) return;
+        drawing = false;
+
+        const left = Math.min(startX, e.clientX);
+        const top = Math.min(startY, e.clientY);
+        const width = Math.abs(e.clientX - startX);
+        const height = Math.abs(e.clientY - startY);
+
+        removeSelectionUi();
+
+        if (width < 20 || height < 20) {
+          showToast("selection too small");
+          setTimeout(() => finish(true), 1600);
+          return;
+        }
+
+        showToast("collecting text...");
+
+        const text = collectTextFromSelection({
+          left,
+          top,
+          right: left + width,
+          bottom: top + height
+        });
+
+        if (!text) {
+          showToast("no text found");
+          setTimeout(() => finish(true), 2200);
+          return;
+        }
+
+        navigator.clipboard.writeText(text).then(() => {
+          showToast("copied");
+          setTimeout(() => finish(true), 2200);
+        }).catch(() => {
+          try {
+            const ta = document.createElement("textarea");
+            ta.value = text;
+            ta.setAttribute("readonly", "");
+            ta.style.position = "fixed";
+            ta.style.left = "-999999px";
+            ta.style.top = "-999999px";
+            document.body.appendChild(ta);
+            ta.focus();
+            ta.select();
+            const ok = document.execCommand("copy");
+            ta.remove();
+            showToast(ok ? "copied" : "copy failed");
+          } catch {
+            showToast("copy failed");
+          }
+          setTimeout(() => finish(true), 2200);
+        });
+      });
+
+      overlay.addEventListener("dblclick", () => {
+        finish();
+        showToast("selection cancelled");
+        setTimeout(() => finish(true), 1600);
+      });
+    }
+  });
+}
